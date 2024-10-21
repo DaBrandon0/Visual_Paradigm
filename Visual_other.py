@@ -141,12 +141,6 @@ class VisualERP:
 
                 self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color3", "center"))
                 self.message_label.tag_configure("color3", foreground=self.colors[self.x])  # Random color for color3
-
-           
-           
-
-
-
             #self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color1", "center"))
             #self.message_label.tag_configure("color1", foreground=self.colors[self.x])
 
