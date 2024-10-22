@@ -1,7 +1,7 @@
 import tkinter as tk
 import random
 
-ROUNDS = 50
+ROUNDS = 5 # Number of rounds to play
 
 class VisualERP:
     def __init__(self, root):
@@ -30,26 +30,26 @@ class VisualERP:
         self.accept_restart = False
         self.accept_start = False
         self.round_number = 0
-        self.color_delay = 400  
-        self.response_delay = 1000  
+        self.color_delay = 400     #THIS IS TIME PERSON SEES THE COLOR WORDS
+        self.response_delay = 750 #THIS IS TIME PERSON HAS TO RESPOND
         self.question_id = None  
 
         # Set up the Text widget for message display with proper formatting
         self.message_label = tk.Text(
             root, 
-            height=2, 
+            height=5, 
             width=20, 
             font=("Arial", 100), 
             wrap="word", 
-            bg="white", 
+            bg="#F0F0F0", 
             relief="flat", 
             bd=0
         )
         self.message_label.tag_configure("center", justify="center")
-        self.message_label.place(relx=0.5, rely=0.4, anchor="center")
+        self.message_label.place(relx=0.5, rely=0.7, anchor="center")
 
         self.score_label = tk.Label(root, text=f"Score: {self.score}", font=("Arial", 16))
-        self.score_label.place(relx=0.5, rely=0.9, anchor="center")
+        self.score_label.place(relx=0.5, rely=0.90, anchor="center")
 
         # Entry field for setting delay time 
         """
@@ -77,17 +77,22 @@ class VisualERP:
 
         self.root.after(0, self.start_screen)
 
+
     def start_screen(self):
         """Display start screen message."""
+        self.message_label.configure(state="normal")
         self.message_label.delete("1.0", tk.END)
         self.message_label.insert(tk.END, "Press Spacebar\n to Begin", "center")
+        self.message_label.configure(state="disabled")
         self.accept_start = True
 
     def count(self):
         """Updates the countdown label and decrements the counter."""
         if self.countdown > 0:
+            self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
             self.message_label.insert(tk.END, str(self.countdown), "center")
+            self.message_label.configure(state="disabled")
             self.countdown -= 1
             self.root.after(1000, self.count)
         else:
@@ -109,6 +114,7 @@ class VisualERP:
             self.display_step += 1
 
             # Insert colored word
+            self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
             # place three words and one of them is randomly colored
             random_color2 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
@@ -149,6 +155,9 @@ class VisualERP:
                 self.message_label.tag_configure("color3", foreground=self.colors[self.x])  # Random color for color3
             #self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color1", "center"))
             #self.message_label.tag_configure("color1", foreground=self.colors[self.x])
+            self.message_label.configure(state="disabled")
+
+            #CHANGE THIS TO CHANGE THE RANDOM ADDITIONAL DELAY BETWEEN THE COLOR WORDS AND THE QUESTION
             random_delay = random.randint(0, 50)
             random_delay = random_delay*10
             self.root.after(self.color_delay + random_delay, self.show_question)
@@ -157,10 +166,13 @@ class VisualERP:
 
     def show_question(self):
         """Display the question and wait for user input."""
+        self.message_label.configure(state="normal")
         self.message_label.delete("1.0", tk.END)
         self.message_label.insert(tk.END, "y or n", "center")
+        self.message_label.configure(state="disabled")
         self.accept_input = True
 
+        #CHANGE THIS TO CHANGE THE TIME THE PERSON HAS TO RESPOND
         self.question_id = self.root.after(self.response_delay, self.show_blank)
 
     def process_input(self, user_said_yes):
@@ -184,15 +196,22 @@ class VisualERP:
         """Display a blank screen."""
         self.accept_input = False
         self.round_number += 1
+        self.message_label.configure(state="normal")
         self.message_label.delete("1.0", tk.END)
-        random_delay = random.randint(75, 250)
-        random_delay = random_delay*10
+        self.message_label.configure(state="disabled")
+
+        #CHANGE THIS TO CHANGE THE BLANK TIME BETWEEN THE ROUNDS
+        random_delay = random.randint(5, 15)
+        random_delay = random_delay*100
         self.root.after(random_delay, self.start_round)
 
     def show_final(self):
         """Display the final score."""
+        self.message_label.configure(state="normal")
         self.message_label.delete("1.0", tk.END)
-        self.message_label.insert(tk.END, f"Game Over! Final Score: {self.score}\nPress R to Return to Main Menu\nPress Space to Replay", "center")
+        #move slightly up
+        self.message_label.insert(tk.END, f"Final Score: {self.score}\nPress R to Restart\nPress Space to Replay", "center")
+        self.message_label.configure(state="disabled")
         self.accept_restart = True
         self.accept_start = True
 
@@ -211,6 +230,7 @@ class VisualERP:
         """Start the game."""
         if not self.accept_start:
             return
+        self.accept_restart = False
         self.accept_start = False
         self.round_number = 0
         self.countdown = 5
