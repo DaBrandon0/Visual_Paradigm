@@ -1,13 +1,17 @@
 import tkinter as tk
 import random
 
-ROUNDS = 20
+ROUNDS = 50
 
 class VisualERP:
     def __init__(self, root):
         self.root = root
         self.root.title("Visual Test")
-        self.colors = ["red", "orange", "yellow", "green", "blue", "purple", "black"]
+        self.colors = [
+            "red", "orange", "yellow", "green", "blue", 
+            "purple", "gray", "pink", 
+            "teal", "maroon", "navy", "olive"
+        ]
 
         # Get screen dimensions
         screen_width = self.root.winfo_screenwidth()
@@ -26,7 +30,7 @@ class VisualERP:
         self.accept_restart = False
         self.accept_start = False
         self.round_number = 0
-        self.color_delay = 500  
+        self.color_delay = 400  
         self.response_delay = 1000  
         self.question_id = None  
 
@@ -47,7 +51,8 @@ class VisualERP:
         self.score_label = tk.Label(root, text=f"Score: {self.score}", font=("Arial", 16))
         self.score_label.place(relx=0.5, rely=0.9, anchor="center")
 
-        # Entry field for setting delay time
+        # Entry field for setting delay time 
+        """
         self.delay_entry = tk.Entry(root, font=("Arial", 16))
         self.delay_entry.place(relx=0.4, rely=0.8, anchor="center")
         self.delay_entry.insert(0, "1000")
@@ -62,6 +67,7 @@ class VisualERP:
 
         self.delay_button = tk.Button(root, text="Update", font=("Arial", 16), command=self.update_delay)
         self.delay_button.place(relx=0.5, rely=0.85, anchor="center")
+        """
 
         # Key event listeners
         self.root.bind("<KeyPress-y>", lambda event: self.process_input(True))
@@ -92,12 +98,12 @@ class VisualERP:
         if self.round_number < ROUNDS:
             tf = random.randint(1, 100)
             if tf < 20:
-                self.x = random.randint(0, 6)
-                self.y = random.randint(0, 6)
+                self.x = random.randint(0, self.colors.__len__() - 1)
+                self.y = random.randint(0, self.colors.__len__() - 1)
                 while self.y == self.x:
-                    self.y = random.randint(0, 6)
+                    self.y = random.randint(0, self.colors.__len__() - 1)
             else:
-                self.x = random.randint(0, 6)
+                self.x = random.randint(0, self.colors.__len__() - 1)
                 self.y = self.x
 
             self.display_step += 1
@@ -105,8 +111,8 @@ class VisualERP:
             # Insert colored word
             self.message_label.delete("1.0", tk.END)
             # place three words and one of them is randomly colored
-            random_color2 = random.randint(0, 6)  # Random color for color3
-            random_color3 = random.randint(0, 6)  # Random color for color3
+            random_color2 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
+            random_color3 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
             random_int = random.randint(1, 3)  # Random placement selection
 
             # Use black for color1 and color2, random color for color3
@@ -143,15 +149,16 @@ class VisualERP:
                 self.message_label.tag_configure("color3", foreground=self.colors[self.x])  # Random color for color3
             #self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color1", "center"))
             #self.message_label.tag_configure("color1", foreground=self.colors[self.x])
-
-            self.root.after(self.color_delay, self.show_question)
+            random_delay = random.randint(0, 50)
+            random_delay = random_delay*10
+            self.root.after(self.color_delay + random_delay, self.show_question)
         else:
             self.show_final()
 
     def show_question(self):
         """Display the question and wait for user input."""
         self.message_label.delete("1.0", tk.END)
-        self.message_label.insert(tk.END, "(y) or (n)", "center")
+        self.message_label.insert(tk.END, "y or n", "center")
         self.accept_input = True
 
         self.question_id = self.root.after(self.response_delay, self.show_blank)
@@ -178,7 +185,9 @@ class VisualERP:
         self.accept_input = False
         self.round_number += 1
         self.message_label.delete("1.0", tk.END)
-        self.root.after(random.randint(1000, 2000), self.start_round)
+        random_delay = random.randint(75, 250)
+        random_delay = random_delay*10
+        self.root.after(random_delay, self.start_round)
 
     def show_final(self):
         """Display the final score."""
