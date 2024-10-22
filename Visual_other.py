@@ -160,7 +160,7 @@ class VisualERP:
             #CHANGE THIS TO CHANGE THE RANDOM ADDITIONAL DELAY BETWEEN THE COLOR WORDS AND THE QUESTION
             random_delay = random.randint(0, 50)
             random_delay = random_delay*10
-            self.root.after(self.color_delay + random_delay, self.show_question)
+            self.root.after(self.color_delay, self.show_question)
         else:
             self.show_final()
 
