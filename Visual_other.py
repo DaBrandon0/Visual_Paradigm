@@ -1,16 +1,18 @@
 import tkinter as tk
 import random
 
-ROUNDS = 5 # Number of rounds to play
+ROUNDS = 30 # Number of rounds to play 
+            # about 10 blocks
 
+black_color = "black"
+random.seed(42)
 class VisualERP:
     def __init__(self, root):
         self.root = root
-        self.root.title("Visual Test")
+        self.root.title("Visual Paradigm")
         self.colors = [
             "red", "orange", "yellow", "green", "blue", 
-            "purple", "gray", "pink", 
-            "teal", "maroon", "navy", "olive"
+            "purple"
         ]
 
         # Get screen dimensions
@@ -23,18 +25,18 @@ class VisualERP:
         # Initialize score and game state
         self.score = 0
         self.display_step = 0
-        self.countdown = 5
+        self.countdown = 3
         self.x = 0
         self.y = 0
         self.accept_input = False  
         self.accept_restart = False
         self.accept_start = False
         self.round_number = 0
-        self.color_delay = 400     #THIS IS TIME PERSON SEES THE COLOR WORDS
-        self.response_delay = 750 #THIS IS TIME PERSON HAS TO RESPOND
-        self.question_id = None  
+        self.color_delay = 800     #THIS IS TIME PERSON SEES THE COLOR WORDS
+        self.response_delay = 1000  #THIS IS TIME PERSON HAS TO RESPOND
+        self.question_id = None 
 
-        # Set up the Text widget for message display with proper formatting
+        # Set up the Text widget for message display
         self.message_label = tk.Text(
             root, 
             height=5, 
@@ -51,43 +53,36 @@ class VisualERP:
         self.score_label = tk.Label(root, text=f"Score: {self.score}", font=("Arial", 16))
         self.score_label.place(relx=0.5, rely=0.90, anchor="center")
 
-        # Entry field for setting delay time 
-        """
-        self.delay_entry = tk.Entry(root, font=("Arial", 16))
-        self.delay_entry.place(relx=0.4, rely=0.8, anchor="center")
-        self.delay_entry.insert(0, "1000")
-        self.delay_label = tk.Label(root, text="Time word is shown (ms):", font=("Arial", 16))
-        self.delay_label.place(relx=0.4, rely=0.75, anchor="center")
-
-        self.response_entry = tk.Entry(root, font=("Arial", 16))
-        self.response_entry.place(relx=0.6, rely=0.8, anchor="center")
-        self.response_entry.insert(0, "1000")
-        self.response_label = tk.Label(root, text="Time to respond (ms):", font=("Arial", 16))
-        self.response_label.place(relx=0.6, rely=0.75, anchor="center")
-
-        self.delay_button = tk.Button(root, text="Update", font=("Arial", 16), command=self.update_delay)
-        self.delay_button.place(relx=0.5, rely=0.85, anchor="center")
-        """
-
         # Key event listeners
         self.root.bind("<KeyPress-y>", lambda event: self.process_input(True))
         self.root.bind("<KeyPress-n>", lambda event: self.process_input(False))
         self.root.bind("<KeyPress-r>", lambda event: self.restart_game(True))
         self.root.bind("<KeyPress-space>", lambda event: self.start_game(True))
 
-        self.root.after(0, self.start_screen)
+        # listen to asdf 
+        self.root.bind("<KeyPress-a>", lambda event: self.process_input(True))
+        self.root.bind("<KeyPress-s>", lambda event: self.process_input(True))
+        self.root.bind("<KeyPress-d>", lambda event: self.process_input(True))
+        self.root.bind("<KeyPress-f>", lambda event: self.process_input(True))
 
+        # listen to jkl;
+        self.root.bind("<KeyPress-j>", lambda event: self.process_input(False))
+        self.root.bind("<KeyPress-k>", lambda event: self.process_input(False))
+        self.root.bind("<KeyPress-l>", lambda event: self.process_input(False))
+        self.root.bind("<KeyPress-semicolon>", lambda event: self.process_input(False))
 
+        self.start_screen()
+
+    # Display start message
     def start_screen(self):
-        """Display start screen message."""
         self.message_label.configure(state="normal")
         self.message_label.delete("1.0", tk.END)
         self.message_label.insert(tk.END, "Press Spacebar\n to Begin", "center")
         self.message_label.configure(state="disabled")
         self.accept_start = True
 
+    # Countdown
     def count(self):
-        """Updates the countdown label and decrements the counter."""
         if self.countdown > 0:
             self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
@@ -98,9 +93,10 @@ class VisualERP:
         else:
             self.start_round()
 
+    # Display the three words
     def start_round(self):
-        """Start a new round."""
         if self.round_number < ROUNDS:
+            self.display_step += 1
             tf = random.randint(1, 100)
             if tf < 20:
                 self.x = random.randint(0, self.colors.__len__() - 1)
@@ -110,40 +106,33 @@ class VisualERP:
             else:
                 self.x = random.randint(0, self.colors.__len__() - 1)
                 self.y = self.x
-
-            self.display_step += 1
-
-            # Insert colored word
-            self.message_label.configure(state="normal")
-            self.message_label.delete("1.0", tk.END)
-            # place three words and one of them is randomly colored
             random_color2 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
             random_color3 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
             random_int = random.randint(1, 3)  # Random placement selection
 
-            # Use black for color1 and color2, random color for color3
-            black_color = "black"
-
+            self.message_label.configure(state="normal")
+            self.message_label.delete("1.0", tk.END)
+            #mismatch could be first word
             if random_int == 1:
-                self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color3", "center"))
-                self.message_label.tag_configure("color3", foreground=self.colors[self.x])  # Random color for color3
+                self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color1", "center"))
+                self.message_label.tag_configure("color1", foreground=self.colors[self.x])  # Random color for color3
 
-                self.message_label.insert(tk.END, self.colors[random_color2] + " ", ("color1", "center"))
-                self.message_label.tag_configure("color1", foreground=black_color)  # Black text for color1
+                self.message_label.insert(tk.END, self.colors[random_color2] + " ", ("color2", "center"))
+                self.message_label.tag_configure("color2", foreground=black_color)  # Black text for color1
 
-                self.message_label.insert(tk.END, self.colors[random_color3] + " ", ("color2", "center"))
-                self.message_label.tag_configure("color2", foreground=black_color)  # Black text for color2
-
+                self.message_label.insert(tk.END, self.colors[random_color3] + " ", ("color3", "center"))
+                self.message_label.tag_configure("color3", foreground=black_color)  # Black text for color2
+            #mismatch could be second word
             elif random_int == 2:
                 self.message_label.insert(tk.END, self.colors[random_color2] + " ", ("color1", "center"))
                 self.message_label.tag_configure("color1", foreground=black_color)  # Black text for color1
 
-                self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color3", "center"))
-                self.message_label.tag_configure("color3", foreground=self.colors[self.x])  # Random color for color3
+                self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color2", "center"))
+                self.message_label.tag_configure("color2", foreground=self.colors[self.x])  # Random color for color3
 
-                self.message_label.insert(tk.END, self.colors[random_color3] + " ", ("color2", "center"))
-                self.message_label.tag_configure("color2", foreground=black_color)  # Black text for color2
-
+                self.message_label.insert(tk.END, self.colors[random_color3] + " ", ("color3", "center"))
+                self.message_label.tag_configure("color3", foreground=black_color)  # Black text for color2
+            #mismatch could be third word
             else:
                 self.message_label.insert(tk.END, self.colors[random_color2] + " ", ("color1", "center"))
                 self.message_label.tag_configure("color1", foreground=black_color)  # Black text for color1
@@ -152,31 +141,37 @@ class VisualERP:
                 self.message_label.tag_configure("color2", foreground=black_color)  # Black text for color2
 
                 self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color3", "center"))
-                self.message_label.tag_configure("color3", foreground=self.colors[self.x])  # Random color for color3
-            #self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color1", "center"))
-            #self.message_label.tag_configure("color1", foreground=self.colors[self.x])
+                self.message_label.tag_configure("color3", foreground=self.colors[self.x]) 
+           
             self.message_label.configure(state="disabled")
-
-            #CHANGE THIS TO CHANGE THE RANDOM ADDITIONAL DELAY BETWEEN THE COLOR WORDS AND THE QUESTION
-            random_delay = random.randint(0, 50)
-            random_delay = random_delay*10
-            self.root.after(self.color_delay, self.show_question)
+            self.accept_input = True
+            self.root.after(self.color_delay, self.show_blank)
         else:
             self.show_final()
 
-    def show_question(self):
-        """Display the question and wait for user input."""
+    # Displays a blank screen between rounds
+    def show_blank(self):
+        self.accept_input = False
+        self.round_number += 1
         self.message_label.configure(state="normal")
         self.message_label.delete("1.0", tk.END)
-        self.message_label.insert(tk.END, "y or n", "center")
         self.message_label.configure(state="disabled")
-        self.accept_input = True
 
-        #CHANGE THIS TO CHANGE THE TIME THE PERSON HAS TO RESPOND
-        self.question_id = self.root.after(self.response_delay, self.show_blank)
+        #CHANGE THIS TO CHANGE THE BLANK TIME BETWEEN THE ROUNDS
+        possible_delay = [750, 1000, 1250]
+        random_delay = random.choice(possible_delay)
+        self.root.after(random_delay, self.start_round)
+
+    def show_final(self):
+        # Display final score
+        self.message_label.configure(state="normal")
+        self.message_label.delete("1.0", tk.END)
+        self.message_label.insert(tk.END, f"Final Score: {self.score}\n Press R to Restart", "center")
+        self.message_label.configure(state="disabled")
+        self.accept_restart = True
 
     def process_input(self, user_said_yes):
-        """Process user input and cancel timeout if needed."""
+        # Process yes or no
         if not self.accept_input:
             return
 
@@ -189,70 +184,28 @@ class VisualERP:
             self.score += 1
 
         self.score_label.config(text=f"Score: {self.score}")
-
-        self.show_blank()
-
-    def show_blank(self):
-        """Display a blank screen."""
-        self.accept_input = False
-        self.round_number += 1
-        self.message_label.configure(state="normal")
-        self.message_label.delete("1.0", tk.END)
-        self.message_label.configure(state="disabled")
-
-        #CHANGE THIS TO CHANGE THE BLANK TIME BETWEEN THE ROUNDS
-        random_delay = random.randint(5, 15)
-        random_delay = random_delay*100
-        self.root.after(random_delay, self.start_round)
-
-    def show_final(self):
-        """Display the final score."""
-        self.message_label.configure(state="normal")
-        self.message_label.delete("1.0", tk.END)
-        #move slightly up
-        self.message_label.insert(tk.END, f"Final Score: {self.score}\nPress R to Restart\nPress Space to Replay", "center")
-        self.message_label.configure(state="disabled")
-        self.accept_restart = True
-        self.accept_start = True
-
+    
     def restart_game(self, restart):
-        """Restart the game."""
+        # Restart the game
         if not self.accept_restart:
             return
         self.accept_restart = False
-        self.score = 0
         self.round_number = 0
-        self.countdown = 5
+        self.countdown = 3
+        self.score = 0
         self.score_label.config(text=f"Score: {self.score}")
         self.start_screen()
 
     def start_game(self, start):
-        """Start the game."""
+        # Start the game
         if not self.accept_start:
             return
-        self.accept_restart = False
         self.accept_start = False
         self.round_number = 0
-        self.countdown = 5
+        self.countdown = 3
         self.score = 0
         self.score_label.config(text=f"Score: {self.score}")
         self.count()
-
-    def update_delay(self):
-        """Update delay values."""
-        try:
-            color_delay = int(self.delay_entry.get())
-            response_delay = int(self.response_entry.get())
-            if color_delay > 0 and response_delay > 0:
-                self.color_delay = color_delay
-                self.response_delay = response_delay
-            else:
-                self.message_label.delete("1.0", tk.END)
-                self.message_label.insert(tk.END, "Please enter a positive number", "center")
-        except ValueError:
-            self.message_label.delete("1.0", tk.END)
-            self.message_label.insert(tk.END, "Please enter a valid number", "center")
-        self.root.focus_set()
 
 if __name__ == "__main__":
     root = tk.Tk()
