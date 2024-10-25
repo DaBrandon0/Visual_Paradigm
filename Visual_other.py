@@ -5,7 +5,6 @@ ROUNDS = 30 # Number of rounds to play
             # about 10 blocks
 
 black_color = "black"
-random.seed(42)
 class VisualERP:
     def __init__(self, root):
         self.root = root
