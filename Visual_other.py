@@ -1,8 +1,7 @@
 import tkinter as tk
 import random
 
-ROUNDS = 30 # Number of rounds to play 
-            # about 10 blocks
+BLOCKS = 13
 
 black_color = "black"
 class VisualERP:
@@ -25,6 +24,8 @@ class VisualERP:
         self.score = 0
         self.display_step = 0
         self.countdown = 3
+        self.ROUNDS = 30
+        self.block = 0
         self.x = 0
         self.y = 0
         self.accept_input = False  
@@ -74,11 +75,16 @@ class VisualERP:
 
     # Display start message
     def start_screen(self):
-        self.message_label.configure(state="normal")
-        self.message_label.delete("1.0", tk.END)
-        self.message_label.insert(tk.END, "Press Spacebar\n to Begin", "center")
-        self.message_label.configure(state="disabled")
-        self.accept_start = True
+        if self.block < BLOCKS:
+            self.ROUNDS = 30
+            self.message_label.configure(state="normal")
+            self.message_label.delete("1.0", tk.END)
+            self.message_label.insert(tk.END, "Press Spacebar\n to Begin", "center")
+            self.message_label.configure(state="disabled")
+            self.accept_start = True
+        else:
+            #end the program
+            self.root.destroy()
 
     # Countdown
     def count(self):
@@ -94,7 +100,7 @@ class VisualERP:
 
     # Display the three words
     def start_round(self):
-        if self.round_number < ROUNDS:
+        if self.round_number < self.ROUNDS:
             self.display_step += 1
             tf = random.randint(1, 100)
             if tf < 20:
@@ -150,6 +156,8 @@ class VisualERP:
 
     # Displays a blank screen between rounds
     def show_blank(self):
+        if(self.accept_input):
+            self.ROUNDS += 1
         self.accept_input = False
         self.round_number += 1
         self.message_label.configure(state="normal")
@@ -167,6 +175,7 @@ class VisualERP:
         self.message_label.delete("1.0", tk.END)
         self.message_label.insert(tk.END, f"Final Score: {self.score}\n Press R to Restart", "center")
         self.message_label.configure(state="disabled")
+        self.block += 1
         self.accept_restart = True
 
     def process_input(self, user_said_yes):
