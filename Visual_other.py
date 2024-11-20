@@ -150,7 +150,7 @@ class VisualERP:
            
             self.message_label.configure(state="disabled")
             self.accept_input = True
-            self.root.after(self.color_delay, self.show_blank)
+          
         else:
             self.show_final()
 
@@ -165,7 +165,7 @@ class VisualERP:
         self.message_label.configure(state="disabled")
 
         #CHANGE THIS TO CHANGE THE BLANK TIME BETWEEN THE ROUNDS
-        possible_delay = [750, 1000, 1250]
+        possible_delay = [1000]
         random_delay = random.choice(possible_delay)
         self.root.after(random_delay, self.start_round)
 
@@ -192,6 +192,7 @@ class VisualERP:
             self.score += 1
 
         self.score_label.config(text=f"Score: {self.score}")
+        self.show_blank()
     
     def restart_game(self, restart):
         # Restart the game
