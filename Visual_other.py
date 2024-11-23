@@ -1,5 +1,9 @@
 import tkinter as tk
 import random
+import time
+import csv
+import os
+
 
 BLOCKS = 13
 
@@ -35,6 +39,7 @@ class VisualERP:
         self.color_delay = 800     #THIS IS TIME PERSON SEES THE COLOR WORDS
         self.response_delay = 1000  #THIS IS TIME PERSON HAS TO RESPOND
         self.question_id = None 
+        self.start_time = None
 
         # Set up the Text widget for message display
         self.message_label = tk.Text(
@@ -71,6 +76,11 @@ class VisualERP:
         self.root.bind("<KeyPress-l>", lambda event: self.process_input(False))
         self.root.bind("<KeyPress-semicolon>", lambda event: self.process_input(False))
 
+        # Prepare CSV file for saving results
+        self.block_number = 0  # Track the current block
+        self.results_file = f"results_block_{self.block_number}.csv"
+        self.prepare_csv()
+        
         self.start_screen()
 
     # Display start message
@@ -100,6 +110,7 @@ class VisualERP:
 
     # Display the three words
     def start_round(self):
+        self.start_time = time.time() 
         if self.round_number < self.ROUNDS:
             self.display_step += 1
             tf = random.randint(1, 100)
@@ -170,7 +181,9 @@ class VisualERP:
         self.root.after(random_delay, self.start_round)
 
     def show_final(self):
-        # Display final score
+        self.prepare_csv()  # Prepare a new CSV for the next block
+
+        # Existing final screen display logic
         self.message_label.configure(state="normal")
         self.message_label.delete("1.0", tk.END)
         self.message_label.insert(tk.END, f"Final Score: {self.score}\n Press R to Restart", "center")
@@ -184,12 +197,28 @@ class VisualERP:
             return
 
         self.accept_input = False
+        
+        # Calculate response time
+        response_time = time.time() - self.start_time
 
         if self.question_id:
             self.root.after_cancel(self.question_id)
 
         if (user_said_yes and self.x == self.y) or (not user_said_yes and self.x != self.y):
             self.score += 1
+        
+        # Log response time along with other data
+        with open(self.results_file, mode="a", newline="") as file:
+            print("running"+ str(self.round_number))
+            writer = csv.writer(file)
+            writer.writerow([
+                self.round_number,
+                self.colors[self.x],
+                self.colors[self.y],
+                (self.x != self.y),  # Mismatch status
+                response_time,  # Response time
+                self.score
+            ])
 
         self.score_label.config(text=f"Score: {self.score}")
         self.show_blank()
@@ -215,6 +244,15 @@ class VisualERP:
         self.score = 0
         self.score_label.config(text=f"Score: {self.score}")
         self.count()
+    
+    def prepare_csv(self):
+        # Prepare a new CSV file for the current block
+        self.results_file = f"results_block_{self.block}.csv"
+        with open(self.results_file, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Round Number", "Color Shown", "Text Shown", "Mismatch", "Response Time", "Score"])
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()
