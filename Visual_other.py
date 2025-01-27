@@ -3,6 +3,23 @@ import random
 import time
 import csv
 import os
+from loop_software_trigger_init import sendTiD
+ """
+ 
+7000 + block number: Marks the start of a new block.
+8000 + block number: Marks the end of the current block.
+
+5000 + round number: Marks the start of a new round within a block.
+
+3001: Stimulus is a match (text and color are the same).
+3002: Stimulus is a mismatch (text and color are different).
+
+4001: User correctly identified a match.
+4002: User correctly identified a mismatch.
+
+5001: User incorrectly identified a match as a mismatch.
+5002: User incorrectly identified a mismatch as a match.
+"""
 
 
 BLOCKS = 13
@@ -86,6 +103,7 @@ class VisualERP:
     # Display start message
     def start_screen(self):
         if self.block < BLOCKS:
+            sendTiD(7000 + self.block)
             self.ROUNDS = 30
             self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
@@ -113,6 +131,7 @@ class VisualERP:
         self.start_time = time.time() 
         if self.round_number < self.ROUNDS:
             self.display_step += 1
+            sendTiD(5000 + self.round_number)  # Event ID 5000 + round number
             tf = random.randint(1, 100)
             if tf < 20:
                 self.x = random.randint(0, self.colors.__len__() - 1)
@@ -122,10 +141,11 @@ class VisualERP:
             else:
                 self.x = random.randint(0, self.colors.__len__() - 1)
                 self.y = self.x
+
             random_color2 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
             random_color3 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
             random_int = random.randint(1, 3)  # Random placement selection
-
+            sendTiD(3001 if self.x == self.y else 3002)  # Event ID 3001 for match, 3002 for mismatch
             self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
             #mismatch could be first word
@@ -181,6 +201,7 @@ class VisualERP:
         self.root.after(random_delay, self.start_round)
 
     def show_final(self):
+        sendTiD(8000 + self.block)
         self.prepare_csv()  # Prepare a new CSV for the next block
 
         # Existing final screen display logic
@@ -192,36 +213,52 @@ class VisualERP:
         self.accept_restart = True
 
     def process_input(self, user_said_yes):
-        # Process yes or no
         if not self.accept_input:
             return
 
         self.accept_input = False
-        
+
         # Calculate response time
         response_time = time.time() - self.start_time
 
-        if self.question_id:
-            self.root.after_cancel(self.question_id)
+        # Determine if the stimulus was a match or mismatch
+        is_match = self.x == self.y
 
-        if (user_said_yes and self.x == self.y) or (not user_said_yes and self.x != self.y):
-            self.score += 1
-        
-        # Log response time along with other data
+        # Determine if the user's response was correct
+        correct = (user_said_yes and is_match) or (not user_said_yes and not is_match)
+
+        # Send event ID based on correctness and match/mismatch
+        if correct:
+            if is_match:
+                sendTiD(4001)  # Correct with Match
+            else:
+                sendTiD(4002)  # Correct with Mismatch
+        else:
+            if is_match:
+                sendTiD(5001)  # Incorrect with Match
+            else:
+                sendTiD(5002)  # Incorrect with Mismatch
+
+        # Log response data to the CSV
         with open(self.results_file, mode="a", newline="") as file:
-            print("running"+ str(self.round_number))
             writer = csv.writer(file)
             writer.writerow([
                 self.round_number,
-                self.colors[self.x],
-                self.colors[self.y],
-                (self.x != self.y),  # Mismatch status
-                response_time,  # Response time
-                self.score
+                self.colors[self.x],      # Color shown
+                self.colors[self.y],      # Text shown
+                not is_match,             # Mismatch status
+                response_time,            # Response time
+                correct                   # Correctness
             ])
 
+        # Update score if the response was correct
+        if correct:
+            self.score += 1
+
+        # Update the score display and move to the next round
         self.score_label.config(text=f"Score: {self.score}")
         self.show_blank()
+
     
     def restart_game(self, restart):
         # Restart the game
