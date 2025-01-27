@@ -241,6 +241,7 @@ class VisualERP:
 
         # Log response data to the CSV
         with open(self.results_file, mode="a", newline="") as file:
+            print("running"+ str(self.round_number))
             writer = csv.writer(file)
             writer.writerow([
                 self.round_number,
@@ -248,7 +249,7 @@ class VisualERP:
                 self.colors[self.y],      # Text shown
                 not is_match,             # Mismatch status
                 response_time,            # Response time
-                correct                   # Correctness
+                self.score                # Score
             ])
 
         # Update score if the response was correct
