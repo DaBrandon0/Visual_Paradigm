@@ -4,11 +4,49 @@ import time
 import csv
 import os
 
+import socket
+from pylsl import StreamInfo, StreamOutlet, StreamInlet, resolve_stream, local_clock
+import threading
 
+"""
+ 
+7000 + block number: Marks the start of a new block.
+8000 + block number: Marks the end of the current block.
+
+5000 + round number: Marks the start of a new round within a block.
+
+3001: Stimulus is a match (text and color are the same).
+3002: Stimulus is a mismatch (text and color are different).
+
+4001: User correctly identified a match.
+4002: User correctly identified a mismatch.
+
+5001: User incorrectly identified a match as a mismatch.
+5002: User incorrectly identified a mismatch as a match.
+"""
+
+
+# Setup UDP
+udp_marker = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+ip = '127.0.0.1'
+port = 12345
+
+# Set up LSL stream
+info = StreamInfo('NBackMarkers', 'Markers', 1, 0, 'string', 'visual_nback_task_001')
+outlet = StreamOutlet(info)
+
+
+    # udp_marker.sendto(message1.encode('utf-8'),(ip,port))
 BLOCKS = 13
 
 black_color = "black"
 class VisualERP:
+    # Function to send a UDP message dynamically
+    def sendTiD(self, base_message):
+        message = f"{base_message} - Block {self.block}, Round {self.round_number}"
+        udp_marker.sendto(message.encode('utf-8'), (ip, port))
+        print(f"Sent UDP message: {message}")
+        
     def __init__(self, root):
         self.root = root
         self.root.title("Visual Paradigm")
@@ -86,6 +124,7 @@ class VisualERP:
     # Display start message
     def start_screen(self):
         if self.block < BLOCKS:
+            self.sendTiD("New Block")
             self.ROUNDS = 30
             self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
@@ -113,6 +152,7 @@ class VisualERP:
         self.start_time = time.time() 
         if self.round_number < self.ROUNDS:
             self.display_step += 1
+            self.sendTiD("NewRound")  # Event ID 5000 + round number
             tf = random.randint(1, 100)
             if tf < 20:
                 self.x = random.randint(0, self.colors.__len__() - 1)
@@ -122,10 +162,11 @@ class VisualERP:
             else:
                 self.x = random.randint(0, self.colors.__len__() - 1)
                 self.y = self.x
+
             random_color2 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
             random_color3 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
             random_int = random.randint(1, 3)  # Random placement selection
-
+            self.sendTiD("StimulusMatch" if self.x == self.y else "StimulusMismatch")  # Event ID 3001 for match, 3002 for mismatch
             self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
             #mismatch could be first word
@@ -169,6 +210,7 @@ class VisualERP:
     def show_blank(self):
         if(self.accept_input):
             self.ROUNDS += 1
+            print("should not be in showblank while accept input")
         self.accept_input = False
         self.round_number += 1
         self.message_label.configure(state="normal")
@@ -181,6 +223,7 @@ class VisualERP:
         self.root.after(random_delay, self.start_round)
 
     def show_final(self):
+        self.sendTiD("EndofBlock")  # Event ID 8000 + block number
         self.prepare_csv()  # Prepare a new CSV for the next block
 
         # Existing final screen display logic
@@ -192,36 +235,55 @@ class VisualERP:
         self.accept_restart = True
 
     def process_input(self, user_said_yes):
-        # Process yes or no
         if not self.accept_input:
             return
 
         self.accept_input = False
-        
+
         # Calculate response time
         response_time = time.time() - self.start_time
 
-        if self.question_id:
-            self.root.after_cancel(self.question_id)
+        # Determine if the stimulus was a match or mismatch
+        is_match = self.x == self.y
 
-        if (user_said_yes and self.x == self.y) or (not user_said_yes and self.x != self.y):
-            self.score += 1
-        
-        # Log response time along with other data
+        # Determine if the user's response was correct
+        correct = (user_said_yes and is_match) or (not user_said_yes and not is_match)
+
+        # Send event ID based on correctness and match/mismatch
+        if correct:
+            if is_match:
+                self.sendTiD("CorrectMatch")  # Correct with Match
+            else:
+                self.sendTiD("CorrectMismatch")  # Correct with Mismatch
+        else:
+            if is_match:
+                self.sendTiD("IncorrectMatch")  # Incorrect with Match
+            else:
+                self.sendTiD("IncorrectMismatch")  # Incorrect with Mismatch
+
+        # Log response data to the CSV
+        '''
         with open(self.results_file, mode="a", newline="") as file:
             print("running"+ str(self.round_number))
             writer = csv.writer(file)
             writer.writerow([
                 self.round_number,
-                self.colors[self.x],
-                self.colors[self.y],
-                (self.x != self.y),  # Mismatch status
-                response_time,  # Response time
-                self.score
+                self.colors[self.x],      # Color shown
+                self.colors[self.y],      # Text shown
+                not is_match,             # Mismatch status
+                response_time,            # Response time
+                self.score                # Score
             ])
+        '''
 
+        # Update score if the response was correct
+        if correct:
+            self.score += 1
+
+        # Update the score display and move to the next round
         self.score_label.config(text=f"Score: {self.score}")
         self.show_blank()
+
     
     def restart_game(self, restart):
         # Restart the game
@@ -255,6 +317,8 @@ class VisualERP:
 
 
 if __name__ == "__main__":
+
+    
     root = tk.Tk()
     app = VisualERP(root)
     root.mainloop()
