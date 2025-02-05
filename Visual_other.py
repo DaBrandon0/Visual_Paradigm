@@ -13,7 +13,7 @@ import threading
 7000 + block number: Marks the start of a new block.
 8000 + block number: Marks the end of the current block.
 
-5000 + round number: Marks the start of a new round within a block.
+6000 + round number: Marks the start of a new round within a block.
 
 3001: Stimulus is a match (text and color are the same).
 3002: Stimulus is a mismatch (text and color are different).
@@ -35,18 +35,15 @@ port = 12345
 info = StreamInfo('NBackMarkers', 'Markers', 1, 0, 'string', 'visual_nback_task_001')
 outlet = StreamOutlet(info)
 
-
-    # udp_marker.sendto(message1.encode('utf-8'),(ip,port))
 BLOCKS = 13
 
 black_color = "black"
 class VisualERP:
-    # Function to send a UDP message dynamically
     def sendTiD(self, base_message):
-        message = f"{base_message} - Block {self.block}, Round {self.round_number}"
+        message = base_message
         udp_marker.sendto(message.encode('utf-8'), (ip, port))
         print(f"Sent UDP message: {message}")
-        
+
     def __init__(self, root):
         self.root = root
         self.root.title("Visual Paradigm")
@@ -80,21 +77,29 @@ class VisualERP:
         self.start_time = None
 
         # Set up the Text widget for message display
+        # Set up the Text widget for message display
+        # Set up the Text widget for message display
         self.message_label = tk.Text(
             root, 
-            height=5, 
-            width=20, 
-            font=("Arial", 100), 
+            height=20,  # Increased height for a larger text area
+            width=80,  # Increased width for more space
+            font=("Arial", 500),  # Larger font for readability
             wrap="word", 
-            bg="#F0F0F0", 
+            bg="#D9D9D9", 
             relief="flat", 
-            bd=0
+            bd=10
         )
         self.message_label.tag_configure("center", justify="center")
-        self.message_label.place(relx=0.5, rely=0.7, anchor="center")
+        self.message_label.place(relx=0.5, rely=0.5, anchor="center")  
 
-        self.score_label = tk.Label(root, text=f"Score: {self.score}", font=("Arial", 16))
-        self.score_label.place(relx=0.5, rely=0.90, anchor="center")
+        # Set up the score label
+        self.score_label = tk.Label(
+            root, 
+            text=f"Score: {self.score}", 
+            font=("Arial", 100),  
+            bg="#D9D9D9"
+        )
+        self.score_label.place(relx=0.5, rely=0.9, anchor="center") 
 
         # Key event listeners
         self.root.bind("<KeyPress-y>", lambda event: self.process_input(True))
@@ -114,17 +119,14 @@ class VisualERP:
         self.root.bind("<KeyPress-l>", lambda event: self.process_input(False))
         self.root.bind("<KeyPress-semicolon>", lambda event: self.process_input(False))
 
-        # Prepare CSV file for saving results
         self.block_number = 0  # Track the current block
-        self.results_file = f"results_block_{self.block_number}.csv"
-        self.prepare_csv()
         
         self.start_screen()
 
     # Display start message
     def start_screen(self):
         if self.block < BLOCKS:
-            self.sendTiD("New Block")
+            self.sendTiD("7000")  # Event ID for block start
             self.ROUNDS = 30
             self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
@@ -152,7 +154,7 @@ class VisualERP:
         self.start_time = time.time() 
         if self.round_number < self.ROUNDS:
             self.display_step += 1
-            self.sendTiD("NewRound")  # Event ID 5000 + round number
+            self.sendTiD("6000")  # Event ID for round start
             tf = random.randint(1, 100)
             if tf < 20:
                 self.x = random.randint(0, self.colors.__len__() - 1)
@@ -162,11 +164,11 @@ class VisualERP:
             else:
                 self.x = random.randint(0, self.colors.__len__() - 1)
                 self.y = self.x
-
             random_color2 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
             random_color3 = random.randint(0, self.colors.__len__() - 1)  # Random color for color3
             random_int = random.randint(1, 3)  # Random placement selection
-            self.sendTiD("StimulusMatch" if self.x == self.y else "StimulusMismatch")  # Event ID 3001 for match, 3002 for mismatch
+
+            self.sendTiD("3001" if self.x == self.y else "3002")  # Event ID for match or mismatch
             self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
             #mismatch could be first word
@@ -210,7 +212,6 @@ class VisualERP:
     def show_blank(self):
         if(self.accept_input):
             self.ROUNDS += 1
-            print("should not be in showblank while accept input")
         self.accept_input = False
         self.round_number += 1
         self.message_label.configure(state="normal")
@@ -223,9 +224,7 @@ class VisualERP:
         self.root.after(random_delay, self.start_round)
 
     def show_final(self):
-        self.sendTiD("EndofBlock")  # Event ID 8000 + block number
-        self.prepare_csv()  # Prepare a new CSV for the next block
-
+        self.sendTiD("8000")  # Event ID for block end
         # Existing final screen display logic
         self.message_label.configure(state="normal")
         self.message_label.delete("1.0", tk.END)
@@ -252,30 +251,15 @@ class VisualERP:
         # Send event ID based on correctness and match/mismatch
         if correct:
             if is_match:
-                self.sendTiD("CorrectMatch")  # Correct with Match
+                self.sendTiD("4001")  # Correct with Match
             else:
-                self.sendTiD("CorrectMismatch")  # Correct with Mismatch
+                self.sendTiD("4002")  # Correct with Mismatch
         else:
             if is_match:
-                self.sendTiD("IncorrectMatch")  # Incorrect with Match
+                self.sendTiD("5001")  # Incorrect with Match
             else:
-                self.sendTiD("IncorrectMismatch")  # Incorrect with Mismatch
-
-        # Log response data to the CSV
-        '''
-        with open(self.results_file, mode="a", newline="") as file:
-            print("running"+ str(self.round_number))
-            writer = csv.writer(file)
-            writer.writerow([
-                self.round_number,
-                self.colors[self.x],      # Color shown
-                self.colors[self.y],      # Text shown
-                not is_match,             # Mismatch status
-                response_time,            # Response time
-                self.score                # Score
-            ])
-        '''
-
+                self.sendTiD("5002")  # Incorrect with Mismatch
+        
         # Update score if the response was correct
         if correct:
             self.score += 1
@@ -284,7 +268,6 @@ class VisualERP:
         self.score_label.config(text=f"Score: {self.score}")
         self.show_blank()
 
-    
     def restart_game(self, restart):
         # Restart the game
         if not self.accept_restart:
@@ -307,18 +290,9 @@ class VisualERP:
         self.score_label.config(text=f"Score: {self.score}")
         self.count()
     
-    def prepare_csv(self):
-        # Prepare a new CSV file for the current block
-        self.results_file = f"results_block_{self.block}.csv"
-        with open(self.results_file, mode="w", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow(["Round Number", "Color Shown", "Text Shown", "Mismatch", "Response Time", "Score"])
-
 
 
 if __name__ == "__main__":
-
-    
     root = tk.Tk()
     app = VisualERP(root)
     root.mainloop()
