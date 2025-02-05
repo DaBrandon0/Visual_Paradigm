@@ -81,25 +81,25 @@ class VisualERP:
         # Set up the Text widget for message display
         self.message_label = tk.Text(
             root, 
-            height=20,  # Increased height for a larger text area
-            width=80,  # Increased width for more space
-            font=("Arial", 500),  # Larger font for readability
+            height=3,  # Increased height for a larger text area
+            width=40,  # Increased width for more space
+            font=("gothic", 70),  # Larger font for readability
             wrap="word", 
             bg="#D9D9D9", 
             relief="flat", 
             bd=10
         )
         self.message_label.tag_configure("center", justify="center")
-        self.message_label.place(relx=0.5, rely=0.5, anchor="center")  
+        self.message_label.place(relx=0.5, rely=0.7, anchor="center")  
 
         # Set up the score label
         self.score_label = tk.Label(
             root, 
             text=f"Score: {self.score}", 
-            font=("Arial", 100),  
+            font=("Arial", 20),  
             bg="#D9D9D9"
         )
-        self.score_label.place(relx=0.5, rely=0.9, anchor="center") 
+        self.score_label.place(relx=0.5, rely=5.5, anchor="center") 
 
         # Key event listeners
         self.root.bind("<KeyPress-y>", lambda event: self.process_input(True))
