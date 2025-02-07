@@ -82,24 +82,26 @@ class VisualERP:
         self.message_label = tk.Text(
             root, 
             height=3,  # Increased height for a larger text area
-            width=40,  # Increased width for more space
-            font=("gothic", 70),  # Larger font for readability
+            width=50,  # Increased width for more space
+            font=("gothic", 100),  # Larger font for readability
             wrap="word", 
             bg="#D9D9D9", 
             relief="flat", 
-            bd=10
+            bd=0,                # No border
+            highlightthickness=0 # No focus ring
         )
         self.message_label.tag_configure("center", justify="center")
-        self.message_label.place(relx=0.5, rely=0.7, anchor="center")  
+        self.message_label.place(relx=0.5, rely=0.5, anchor="center")  
+        self.message_label.pack(expand=True) 
 
         # Set up the score label
         self.score_label = tk.Label(
             root, 
             text=f"Score: {self.score}", 
-            font=("Arial", 20),  
+            font=("Arial", 16),  
             bg="#D9D9D9"
         )
-        self.score_label.place(relx=0.5, rely=5.5, anchor="center") 
+        self.score_label.place(relx=0.5, rely=0.95, anchor="center") 
 
         # Key event listeners
         self.root.bind("<KeyPress-y>", lambda event: self.process_input(True))
@@ -155,7 +157,7 @@ class VisualERP:
         if self.round_number < self.ROUNDS:
             self.display_step += 1
             self.sendTiD("6000")  # Event ID for round start
-            tf = random.randint(1, 100)
+            tf = random.randint(1, 80)
             if tf < 20:
                 self.x = random.randint(0, self.colors.__len__() - 1)
                 self.y = random.randint(0, self.colors.__len__() - 1)
