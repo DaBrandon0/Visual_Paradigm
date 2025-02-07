@@ -42,7 +42,7 @@ class VisualERP:
     def sendTiD(self, base_message):
         message = base_message
         udp_marker.sendto(message.encode('utf-8'), (ip, port))
-        print(f"Sent UDP message: {message}")
+        #print(f"Sent UDP message: {message}")
 
     def __init__(self, root):
         self.root = root
