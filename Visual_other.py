@@ -42,7 +42,7 @@ class VisualERP:
     def sendTiD(self, base_message):
         message = base_message
         udp_marker.sendto(message.encode('utf-8'), (ip, port))
-        #print(f"Sent UDP message: {message}")
+        print(f"Sent UDP message: {message}")
 
     def __init__(self, root):
         self.root = root
@@ -206,14 +206,15 @@ class VisualERP:
            
             self.message_label.configure(state="disabled")
             self.accept_input = True
+            #show for 1 second
+            self.root.after(1000, self.show_blank)
           
         else:
             self.show_final()
 
     # Displays a blank screen between rounds
     def show_blank(self):
-        if(self.accept_input):
-            self.ROUNDS += 1
+        self.accept_input = False
         self.accept_input = False
         self.round_number += 1
         self.message_label.configure(state="normal")
@@ -221,7 +222,7 @@ class VisualERP:
         self.message_label.configure(state="disabled")
 
         #CHANGE THIS TO CHANGE THE BLANK TIME BETWEEN THE ROUNDS
-        possible_delay = [1000]
+        possible_delay = [2000]
         random_delay = random.choice(possible_delay)
         self.root.after(random_delay, self.start_round)
 
@@ -268,7 +269,6 @@ class VisualERP:
 
         # Update the score display and move to the next round
         self.score_label.config(text=f"Score: {self.score}")
-        self.show_blank()
 
     def restart_game(self, restart):
         # Restart the game
