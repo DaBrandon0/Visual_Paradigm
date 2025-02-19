@@ -44,11 +44,11 @@ for i in range(512):
         dist.append(EEG1sec_CZ_valid[j][i])
     dist_CZ_valid.append(dist)
 
-
+'''
 plt.hist(dist_FCZ_err[0], bins=50, alpha=0.5, label='List 1', color='blue')
 plt.hist(dist_FCZ_valid[0], bins=50, alpha=0.5, label='List 2', color='orange')
 plt.show()
-
+'''
 ##Ttest
 average_t_FCZ = []
 average_t_CZ = []
@@ -75,7 +75,7 @@ plt.plot(x, average_t_FCZ, label='FCZ', marker='o')
 plt.plot(x, average_t_CZ, label='CZ', marker='s')
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
-plt.title('Line Chart of Two Arrays')
+plt.title('t-test')
 plt.legend()
 #Grand average CZ plot
 plt.figure()
@@ -83,15 +83,15 @@ plt.plot(x, CZ_valid_averages, label='valid', marker='o')
 plt.plot(x, CZ_err_averages, label='error', marker='s')
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
-plt.title('CZ plot')
+plt.title('CZ plot grand average')
 plt.legend()
 #Grand average FCZ plot
 plt.figure()
-#plt.plot(x, FCZ_valid_averages, label='valid', marker='o')
-plt.plot(x, EEG1sec_FCZ_err[7], label='error', marker='s')
+plt.plot(x, FCZ_valid_averages, label='valid', marker='o')
+plt.plot(x, FCZ_err_averages, label='error', marker='s')
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
-plt.title('FCZ plot')
+plt.title('FCZ plot grand average')
 plt.legend()
 plt.show()
 
