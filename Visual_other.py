@@ -12,6 +12,7 @@ import threading
  
 7000 + block number: Marks the start of a new block.
 8000 + block number: Marks the end of the current block.
+9000: Marks the start of a blank screen between rounds.
 
 6000 + round number: Marks the start of a new round within a block.
 
@@ -52,6 +53,10 @@ class VisualERP:
             "purple"
         ]
 
+        self.root.attributes("-fullscreen", True)  
+        self.root.bind("<Escape>", self.exit_fullscreen)  # Allow exiting fullscreen with ESC
+        self.root.bind("`", self.enter_fullscreen)  #Allow fullscreen with `
+
         # Get screen dimensions
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
@@ -63,7 +68,7 @@ class VisualERP:
         self.score = 0
         self.display_step = 0
         self.countdown = 3
-        self.ROUNDS = 30
+        self.ROUNDS = 31
         self.block = 0
         self.x = 0
         self.y = 0
@@ -83,7 +88,7 @@ class VisualERP:
             root, 
             height=3,  # Increased height for a larger text area
             width=50,  # Increased width for more space
-            font=("gothic", 100),  # Larger font for readability
+            font=("gothic", 40),  # Larger font for readability
             wrap="word", 
             bg="#D9D9D9", 
             relief="flat", 
@@ -110,16 +115,16 @@ class VisualERP:
         self.root.bind("<KeyPress-space>", lambda event: self.start_game(True))
 
         # listen to asdf 
-        self.root.bind("<KeyPress-a>", lambda event: self.process_input(True))
-        self.root.bind("<KeyPress-s>", lambda event: self.process_input(True))
-        self.root.bind("<KeyPress-d>", lambda event: self.process_input(True))
-        self.root.bind("<KeyPress-f>", lambda event: self.process_input(True))
+        self.root.bind("<KeyPress-a>", lambda event: self.process_input(False))
+        self.root.bind("<KeyPress-s>", lambda event: self.process_input(False))
+        self.root.bind("<KeyPress-d>", lambda event: self.process_input(False))
+        self.root.bind("<KeyPress-f>", lambda event: self.process_input(False))
 
         # listen to jkl;
-        self.root.bind("<KeyPress-j>", lambda event: self.process_input(False))
-        self.root.bind("<KeyPress-k>", lambda event: self.process_input(False))
-        self.root.bind("<KeyPress-l>", lambda event: self.process_input(False))
-        self.root.bind("<KeyPress-semicolon>", lambda event: self.process_input(False))
+        self.root.bind("<KeyPress-j>", lambda event: self.process_input(True))
+        self.root.bind("<KeyPress-k>", lambda event: self.process_input(True))
+        self.root.bind("<KeyPress-l>", lambda event: self.process_input(True))
+        self.root.bind("<KeyPress-semicolon>", lambda event: self.process_input(True))
 
         self.block_number = 0  # Track the current block
         
@@ -129,7 +134,7 @@ class VisualERP:
     def start_screen(self):
         if self.block < BLOCKS:
             self.sendTiD("7000")  # Event ID for block start
-            self.ROUNDS = 30
+            self.ROUNDS = 31
             self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
             self.message_label.insert(tk.END, "Press Spacebar\n to Begin", "center")
@@ -149,7 +154,7 @@ class VisualERP:
             self.countdown -= 1
             self.root.after(1000, self.count)
         else:
-            self.start_round()
+            self.show_blank()
 
     # Display the three words
     def start_round(self):
@@ -207,13 +212,14 @@ class VisualERP:
             self.message_label.configure(state="disabled")
             self.accept_input = True
             #show for 1 second
-            self.root.after(1000, self.show_blank)
+            self.root.after(1500, self.show_blank)
           
         else:
             self.show_final()
 
     # Displays a blank screen between rounds
     def show_blank(self):
+        self.sendTiD("9000")  # Event ID for blank screen
         self.accept_input = False
         self.accept_input = False
         self.round_number += 1
@@ -292,6 +298,11 @@ class VisualERP:
         self.score_label.config(text=f"Score: {self.score}")
         self.count()
     
+    def exit_fullscreen(self, event=None):  
+        self.root.attributes("-fullscreen", False)  # Disable fullscreen
+    
+    def enter_fullscreen(self, event=None):
+        self.root.attributes("-fullscreen", True)
 
 
 if __name__ == "__main__":
