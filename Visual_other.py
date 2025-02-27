@@ -8,13 +8,16 @@ import socket
 from pylsl import StreamInfo, StreamOutlet, StreamInlet, resolve_stream, local_clock
 import threading
 
+from datetime import datetime
+
+
 """
  
-7000 + block number: Marks the start of a new block.
-8000 + block number: Marks the end of the current block.
+7000: Marks the start of a new block.
+8000: Marks the end of the current block.
 9000: Marks the start of a blank screen between rounds.
 
-6000 + round number: Marks the start of a new round within a block.
+6000 : Marks the start of a new trial within a block.
 
 3001: Stimulus is a match (text and color are the same).
 3002: Stimulus is a mismatch (text and color are different).
@@ -42,10 +45,20 @@ black_color = "black"
 class VisualERP:
     def sendTiD(self, base_message):
         message = base_message
-        udp_marker.sendto(message.encode('utf-8'), (ip, port))
-        print(f"Sent UDP message: {message}")
+        # udp_marker.sendto(message.encode('utf-8'), (ip, port))
+        # print(f"Sent UDP message: {message}")
+
+        timestamp = datetime.now()
+        with open(self.results_file, mode="a", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow([timestamp, message])
 
     def __init__(self, root):
+
+        
+        self.results_file = None
+        self.prepare_csv()
+
         self.root = root
         self.root.title("Visual Paradigm")
         self.colors = [
@@ -63,7 +76,7 @@ class VisualERP:
 
         # Set window dimensions
         self.root.geometry(f"{screen_width}x{screen_height}")
-
+        self.root.configure(bg="#D9D9D9")
         # Initialize score and game state
         self.score = 0
         self.display_step = 0
@@ -304,6 +317,13 @@ class VisualERP:
     def enter_fullscreen(self, event=None):
         self.root.attributes("-fullscreen", True)
 
+    def prepare_csv(self):
+        # Prepare a new CSV file for the current block
+        filename = input("Enter the name for the CSV file (without extension): ") + ".csv"
+        self.results_file = filename
+        with open(self.results_file, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Time", "Marker"])
 
 if __name__ == "__main__":
     root = tk.Tk()
