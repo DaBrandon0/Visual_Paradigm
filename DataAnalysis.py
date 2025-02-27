@@ -3,6 +3,8 @@ import scipy
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+from scipy.interpolate import make_interp_spline
+
 #open formatted files containing 1 second of eeg data after stimuli
 with open('EEG1sec_CZ_err.pkl', 'rb') as file:
     EEG1sec_CZ_err = pickle.load(file)
@@ -43,8 +45,8 @@ for i in range(512):
     for j in range(len(EEG1sec_CZ_valid)):
         dist.append(EEG1sec_CZ_valid[j][i])
     dist_CZ_valid.append(dist)
-
 '''
+ #Histogram
 plt.hist(dist_FCZ_err[0], bins=50, alpha=0.5, label='List 1', color='blue')
 plt.hist(dist_FCZ_valid[0], bins=50, alpha=0.5, label='List 2', color='orange')
 plt.show()
@@ -68,30 +70,42 @@ FCZ_valid_averages = [sum(elements) / len(elements) for elements in zip(*EEG1sec
 FCZ_err_averages = [sum(elements) / len(elements) for elements in zip(*EEG1sec_FCZ_err)]
 
 
-x = list(range(512))
+x = np.array(list(range(512)))
+x_smooth = np.linspace(x.min(), x.max(), 5120)
+
+spline_CZ_e = make_interp_spline(x, CZ_err_averages, k=3)  # Cubic spline interpolation
+spline_CZ_v = make_interp_spline(x, CZ_valid_averages, k=3)  # Cubic spline interpolation
+smooth_CZ_e = spline_CZ_e(x_smooth)
+smooth_CZ_v = spline_CZ_v(x_smooth)
+
+spline_FCZ_e = make_interp_spline(x, FCZ_err_averages, k=3)  # Cubic spline interpolation
+spline_FCZ_v = make_interp_spline(x, FCZ_valid_averages, k=3)  # Cubic spline interpolation
+smooth_FCZ_e = spline_FCZ_e(x_smooth)
+smooth_FCZ_v = spline_FCZ_v(x_smooth)
+
 
 #Ttest plots
-plt.plot(x, average_t_FCZ, label='FCZ', marker='o')
-plt.plot(x, average_t_CZ, label='CZ', marker='s')
+plt.plot(x, average_t_FCZ, label='FCZ')
+plt.plot(x, average_t_CZ, label='CZ')
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
-plt.title('t-test')
+plt.title('Time series distribution t-test')
 plt.legend()
 #Grand average CZ plot
 plt.figure()
-plt.plot(x, CZ_valid_averages, label='valid', marker='o')
-plt.plot(x, CZ_err_averages, label='error', marker='s')
-plt.xlabel('X-axis')
-plt.ylabel('Y-axis')
-plt.title('CZ plot grand average')
+plt.plot(x_smooth, smooth_CZ_v, label='valid')
+plt.plot(x_smooth, smooth_CZ_e, label='error')
+plt.xlabel('1 second of samples at 512 Hz sampling rate after stimuli')
+plt.ylabel('μV')
+plt.title('Grand Average CZ plot')
 plt.legend()
 #Grand average FCZ plot
 plt.figure()
-plt.plot(x, FCZ_valid_averages, label='valid', marker='o')
-plt.plot(x, FCZ_err_averages, label='error', marker='s')
-plt.xlabel('X-axis')
-plt.ylabel('Y-axis')
-plt.title('FCZ plot grand average')
+plt.plot(x_smooth, smooth_FCZ_v, label='valid')
+plt.plot(x_smooth, smooth_FCZ_e, label='error')
+plt.xlabel('1 second of samples at 512 Hz sampling rate after stimuli')
+plt.ylabel('μV')
+plt.title('Grand Average FCZ plot')
 plt.legend()
 plt.show()
 
