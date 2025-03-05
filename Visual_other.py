@@ -45,19 +45,19 @@ black_color = "black"
 class VisualERP:
     def sendTiD(self, base_message):
         message = base_message
-        # udp_marker.sendto(message.encode('utf-8'), (ip, port))
+        udp_marker.sendto(message.encode('utf-8'), (ip, port))
         # print(f"Sent UDP message: {message}")
 
-        timestamp = datetime.now()
-        with open(self.results_file, mode="a", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow([timestamp, message])
+        # timestamp = datetime.now()
+        # with open(self.results_file, mode="a", newline="") as file:
+        #     writer = csv.writer(file)
+        #     writer.writerow([timestamp, message])
 
     def __init__(self, root):
 
         
         self.results_file = None
-        self.prepare_csv()
+        # self.prepare_csv()
 
         self.root = root
         self.root.title("Visual Paradigm")
@@ -81,7 +81,7 @@ class VisualERP:
         self.score = 0
         self.display_step = 0
         self.countdown = 3
-        self.ROUNDS = 31
+        self.ROUNDS = 32
         self.block = 0
         self.x = 0
         self.y = 0
@@ -93,6 +93,8 @@ class VisualERP:
         self.response_delay = 1000  #THIS IS TIME PERSON HAS TO RESPOND
         self.question_id = None 
         self.start_time = None
+
+        self.block_conditions = []  # Stores the predefined randomization per block
 
         # Set up the Text widget for message display
         # Set up the Text widget for message display
@@ -146,8 +148,8 @@ class VisualERP:
     # Display start message
     def start_screen(self):
         if self.block < BLOCKS:
+            self.prepare_block_conditions()
             self.sendTiD("7000")  # Event ID for block start
-            self.ROUNDS = 31
             self.message_label.configure(state="normal")
             self.message_label.delete("1.0", tk.END)
             self.message_label.insert(tk.END, "Press Spacebar\n to Begin", "center")
@@ -169,14 +171,19 @@ class VisualERP:
         else:
             self.show_blank()
 
-    # Display the three words
+    def prepare_block_conditions(self):
+        self.block_conditions = [0] * 8 + [1] * 24  # 8 zeros and 24 ones
+        random.shuffle(self.block_conditions)  # Shuffle to randomize order
+
     def start_round(self):
         self.start_time = time.time() 
-        if self.round_number < self.ROUNDS:
+        self.round_number += 1
+        if self.round_number <= self.ROUNDS:
             self.display_step += 1
             self.sendTiD("6000")  # Event ID for round start
-            tf = random.randint(1, 80)
-            if tf < 20:
+            #tf = random.randint(1, 80)
+            tf_condition = self.block_conditions[self.round_number - 1]
+            if tf_condition == 0:
                 self.x = random.randint(0, self.colors.__len__() - 1)
                 self.y = random.randint(0, self.colors.__len__() - 1)
                 while self.y == self.x:
@@ -220,12 +227,13 @@ class VisualERP:
                 self.message_label.tag_configure("color2", foreground=black_color)  # Black text for color2
 
                 self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color3", "center"))
-                self.message_label.tag_configure("color3", foreground=self.colors[self.x]) 
-           
+                self.message_label.tag_configure("color3", foreground=self.colors[self.x])
+          
+            print(self.round_number)
             self.message_label.configure(state="disabled")
             self.accept_input = True
             #show for 1 second
-            self.root.after(1500, self.show_blank)
+            self.root.after(2000, self.show_blank)
           
         else:
             self.show_final()
@@ -235,7 +243,7 @@ class VisualERP:
         self.sendTiD("9000")  # Event ID for blank screen
         self.accept_input = False
         self.accept_input = False
-        self.round_number += 1
+        #self.round_number += 1
         self.message_label.configure(state="normal")
         self.message_label.delete("1.0", tk.END)
         self.message_label.configure(state="disabled")
