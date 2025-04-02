@@ -45,19 +45,19 @@ black_color = "black"
 class VisualERP:
     def sendTiD(self, base_message):
         message = base_message
-        udp_marker.sendto(message.encode('utf-8'), (ip, port))
-        # print(f"Sent UDP message: {message}")
+        # udp_marker.sendto(message.encode('utf-8'), (ip, port))
+        # # print(f"Sent UDP message: {message}")
 
-        # timestamp = datetime.now()
-        # with open(self.results_file, mode="a", newline="") as file:
-        #     writer = csv.writer(file)
-        #     writer.writerow([timestamp, message])
+        timestamp = datetime.now()
+        with open(self.results_file, mode="a", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow([timestamp, message])
 
     def __init__(self, root):
 
         
         self.results_file = None
-        # self.prepare_csv()
+        self.prepare_csv()
 
         self.root = root
         self.root.title("Visual Paradigm")
@@ -229,11 +229,11 @@ class VisualERP:
                 self.message_label.insert(tk.END, self.colors[self.y] + " ", ("color3", "center"))
                 self.message_label.tag_configure("color3", foreground=self.colors[self.x])
           
-            print(self.round_number)
+            #print(self.round_number, tf_condition)
             self.message_label.configure(state="disabled")
             self.accept_input = True
             #show for 1 second
-            self.root.after(2000, self.show_blank)
+            self.root.after(1500, self.show_blank)
           
         else:
             self.show_final()
