@@ -5,7 +5,7 @@ import csv
 import os
 
 import socket
-from pylsl import StreamInfo, StreamOutlet, StreamInlet, resolve_stream, local_clock
+# from pylsl import StreamInfo, StreamOutlet, StreamInlet, resolve_stream, local_clock
 import threading
 
 from datetime import datetime
@@ -31,13 +31,13 @@ from datetime import datetime
 
 
 # Setup UDP
-udp_marker = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-ip = '127.0.0.1'
-port = 12345
+# udp_marker = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+# ip = '127.0.0.1'
+# port = 12345
 
 # Set up LSL stream
-info = StreamInfo('NBackMarkers', 'Markers', 1, 0, 'string', 'visual_nback_task_001')
-outlet = StreamOutlet(info)
+# info = StreamInfo('NBackMarkers', 'Markers', 1, 0, 'string', 'visual_nback_task_001')
+# outlet = StreamOutlet(info)
 
 BLOCKS = 13
 
